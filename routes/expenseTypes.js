@@ -1,6 +1,6 @@
 import express from 'express';
 import createError from 'http-errors';
-import ExpenseType from '../models/expenseTypeModel';
+import ExpenseType from '../models/expense-type';
 
 const expenseTypeRouter = express.Router();
 
@@ -10,24 +10,22 @@ expenseTypeRouter.route('/')
   })
   .post((req, res, next) => {
     if (!req.body.code || !req.body.title) {
-      return next(createError(
-        400,
-        'Incomplete data provided.'
-      ));
+      return next(createError(400, 'Incomplete data provided.'));
     }
 
     let expenseType = new ExpenseType(req.body);
+
     expenseType.save();
 
     res.status(201).send(expenseType);
   });
 
-expenseTypeRouter.use('/:expenseTypeId', (req, res, next) => {
-  ExpenseType.findById(req.params.expenseTypeId, (err, expenseType) => {
+expenseTypeRouter.use('/:id', (req, res, next) => {
+  ExpenseType.findById(req.params.id, (err, expenseType) => {
     if (err || !expenseType) {
       return next(err ? err : createError(
         404,
-        `ExpenseType ${req.params.expenseTypeId} not found.`
+        `ExpenseType ${req.params.id} not found.`
       ));
     }
 
@@ -37,11 +35,9 @@ expenseTypeRouter.use('/:expenseTypeId', (req, res, next) => {
   });
 });
 
-expenseTypeRouter.route('/:expenseTypeId')
-  .get((req, res) => {
-    res.json(req.expenseType)
-  })
-  .put((req, res, next) => {
+expenseTypeRouter.route('/:id')
+  .get((req, res) => res.json(req.expenseType))
+  .put((req, res) => {
     req.expenseType.code = req.body.code;
     req.expenseType.title = req.body.title;
 
@@ -49,7 +45,7 @@ expenseTypeRouter.route('/:expenseTypeId')
 
     res.json(req.expenseType);
   })
-  .patch((req, res, next) => {
+  .patch((req, res) => {
     if (req.body._id) {
       delete req.body._id;
     }
@@ -62,11 +58,11 @@ expenseTypeRouter.route('/:expenseTypeId')
 
     res.json(req.expenseType);
   })
-  .delete((req, res, next) => {
+  .delete((req, res) => {
     req.expenseType.remove(err => {
       if (err) {
-        return res.status(500).send(err)
-      };
+        return res.status(500).send(err);
+      }
 
       res.status(204).send('removed');
     });
