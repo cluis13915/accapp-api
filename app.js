@@ -28,13 +28,13 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/expenseTypes', expenseTypesRouter);
 
-// catch 404 and forward to error handler
+
+// Catch 404 and forward to error handler
 app.use((req, res, next) => next(createError(404)));
 
-// error handler
-app.use((err, req, res) => {
-  console.log('ERROR==================');
-  console.log(err);
+// WARNING: Main error handler. Defining 4 arguments is required by Express, so
+// ignore linter warnings. Check http://expressjs.com/en/guide/error-handling.html
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

@@ -1,23 +1,16 @@
 import express from 'express';
-import createError from 'http-errors';
 import User from '../models/user';
+import DefaultErrors from '../lib/default-errors';
+import SuccessReponse from '../lib/success-responses';
 
 const router = express.Router();
-
-const incompleDataError = () => createError(400, 'Incomplete data provided.');
-
-const resourceNotFoundError = (resourceName = null) => createError(
-  404,
-  `${resourceName || 'Resource'} not found.`
-);
-
-const successResponse = (res, message = null) => res.status(200).json({
-  message: message || 'OK'
-});
+const { incompleDataError, resourceNotFoundError } = DefaultErrors;
+const { successRes } = SuccessReponse;
 
 
 router.post('/', (req, res, next) => {
   if (!req.body.name || !req.body.email || !req.body.password) {
+    // return res.status(400).json({ message: "Sos mula" });
     return next(incompleDataError());
   }
 
@@ -59,11 +52,11 @@ router.get('/:id', (req, res, next) => {
 
 router.delete('/:id', (req, res, next) => {
   User.findByIdAndRemove(req.params.id, (err, user) => {
-    if (err) {
-      return next(err);
+    if (err || !user) {
+      return next(err ? err : resourceNotFoundError());
     }
 
-    return successResponse(res, `User ${user.name} was deleted.`);
+    return successRes(res, `User ${user.name} was deleted.`);
   });
 });
 
