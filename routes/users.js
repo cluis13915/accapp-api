@@ -60,4 +60,14 @@ router.delete('/:id', (req, res, next) => {
   });
 });
 
+router.put('/:id', (req, res, next) => {
+  User.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, user) => {
+    if (err || !user) {
+      return next(err ? err : resourceNotFoundError());
+    }
+
+    res.json(user);
+  });
+});
+
 export default router;
