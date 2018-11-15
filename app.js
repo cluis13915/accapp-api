@@ -6,7 +6,8 @@ import logger from 'morgan';
 
 import db from './db';
 
-import indexRouter from './routes/index';
+import verifyToken from './auth/verify-token';
+import authRouter from './auth/AuthController';
 import usersRouter from './routes/users';
 import expenseTypesRouter from './routes/expenseTypes';
 
@@ -24,7 +25,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.use('/', indexRouter);
+app.use('/auth', authRouter);
+app.use(verifyToken);
 app.use('/users', usersRouter);
 app.use('/expenseTypes', expenseTypesRouter);
 

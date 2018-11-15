@@ -10,7 +10,6 @@ const { successRes } = SuccessReponse;
 
 router.post('/', (req, res, next) => {
   if (!req.body.name || !req.body.email || !req.body.password) {
-    // return res.status(400).json({ message: "Sos mula" });
     return next(incompleDataError());
   }
 
