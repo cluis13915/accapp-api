@@ -34,7 +34,7 @@ router.post('/register', (req, res, next) => {
         { expiresIn: config.tokenExpiration }
       );
 
-      res.json({ auth: true, token: token });
+      res.json({ auth: user, token: token });
     }
   );
 });
@@ -53,7 +53,7 @@ router.post('/login', (req, res, next) => {
 
     if (!passwordIsvalid) {
       return res.status(401).json({
-        auth: false,
+        user: null,
         token: null,
         message: 'Invalid password provided.'
       });
@@ -63,7 +63,7 @@ router.post('/login', (req, res, next) => {
       expiresIn: config.tokenExpiration
     });
 
-    res.json({ auth: true, token: token });
+    res.json({ user: user, token: token });
   });
 });
 
