@@ -1,54 +1,41 @@
 import express from 'express';
 import User from '../models/user';
 import DefaultErrors from '../lib/default-errors';
+import createError from 'http-errors';
 import SuccessReponse from '../lib/success-responses';
 
 const router = express.Router();
-const { incompleDataError, resourceNotFoundError } = DefaultErrors;
+const { resourceNotFoundError } = DefaultErrors;
 const { successRes } = SuccessReponse;
 
 
-router.post('/', (req, res, next) => {
-  if (!req.body.name || !req.body.email || !req.body.password) {
-    return next(incompleDataError());
-  }
+// To create user, the register endpoint must be used.
 
-  User.create(
-    {
-      name: req.body.name,
-      email: req.body.email,
-      password: req.body.password
-    },
-    (err, user) => {
-      if (err) {
-        return next(err);
-      }
-
-      res.json(user);
-    }
-  );
-});
-
+// Get list of users.
 router.get('/', (req, res, next) => {
   User.find({}, (err, users) => {
     if (err) {
       return next(err);
     }
 
-    res.json(users);
+    res.json(users.map(u => u.asResponse()));
   });
 });
 
+
+// Get user by ID.
 router.get('/:id', (req, res, next) => {
   User.findById(req.params.id, (err, user) => {
     if (err || !user) {
       return next(err ? err : resourceNotFoundError());
     }
 
-    res.json(user);
+    res.json(user.asResponse());
   });
 });
 
+
+// Delete user by ID.
 router.delete('/:id', (req, res, next) => {
   User.findByIdAndRemove(req.params.id, (err, user) => {
     if (err || !user) {
@@ -59,14 +46,35 @@ router.delete('/:id', (req, res, next) => {
   });
 });
 
-router.put('/:id', (req, res, next) => {
-  User.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, user) => {
+
+// Update user by ID.
+router.patch('/:id', (req, res, next) => {
+  User.findById(req.params.id, (err, user) => {
     if (err || !user) {
       return next(err ? err : resourceNotFoundError());
     }
 
-    res.json(user);
+    const data = req.body;
+
+    if (data.password) {
+      return next(createError(400, 'Password cannot be set.'));
+    } else if (data.username && (data.username !== user.username)) {
+      return next(createError(400, 'Username cannot be changed.'));
+    } else if (data.email && (data.email !== user.email)) {
+      return next(createError(400, 'Email cannot be changed.'));
+    }
+
+    Object.assign(user, data);
+
+    user.save(function(err, userUpdated) {
+      if (err) {
+        return next(err);
+      }
+
+      res.json(userUpdated.asResponse());
+    });
   });
 });
+
 
 export default router;

@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import createError from 'http-errors';
 
 import config from '../config';
 
@@ -9,7 +10,7 @@ router.use('/*', (req, res, next) => {
   let token = req.headers['x-access-token'];
 
   if (!token) {
-    return res.status(401).json({ auth: false, message: 'No token provided.' });
+    return next(createError(401, 'User token required.'));
   }
 
   jwt.verify(token, config.secret, (err) => {
