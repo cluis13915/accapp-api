@@ -41,9 +41,38 @@ app.use('/expenseTypes', expenseTypesRouter);
 // Catch 404 and forward to error handler
 app.use((req, res, next) => next(createError(404)));
 
+// Catch model validation errors to send a 400 to the user.
+app.use((err, req, res, next) => {
+  console.log('ERROR 1: Validation error...');
+  console.log(err);
+  const { name, message } = err;
+
+  if (name === 'ValidationError') {
+    const err_res = Object.values(err.errors)
+      .map(({ name, path, message, value }) => ({ name, path, message, value }));
+
+    return res.status(400).json({ name, message, errors: err_res });
+  }
+
+  next(err, req, res);
+});
+
+// Catch unique validation errors to send a 400 to the user.
+app.use((err, req, res, next) => {
+  console.log('ERROR 2: Unique validation error...');
+  console.log(err);
+  if (err.message.indexOf('duplicate key error') !== -1) {
+    return res.status(400).json({ message: err.message });
+  }
+
+  next(err, req, res);
+});
+
 // WARNING: Main error handler. Defining 4 arguments is required by Express, so
 // ignore linter warnings. Check http://expressjs.com/en/guide/error-handling.html
 app.use((err, req, res, next) => {
+  console.log('ERROR 3: Uncatched error...');
+  console.log(err);
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
